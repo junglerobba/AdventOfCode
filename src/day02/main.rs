@@ -1,6 +1,6 @@
 use std::{fs::File, io::Read};
 
-#[derive(PartialEq, Debug)]
+#[derive(PartialEq, Debug, Copy, Clone)]
 enum Move {
     Rock,
     Paper,
@@ -60,9 +60,31 @@ impl Outcome {
             _ => Outcome::Draw,
         }
     }
+
+    fn from_letter(string: &str) -> Option<Outcome> {
+        match string {
+            "X" => Some(Outcome::Loss),
+            "Y" => Some(Outcome::Draw),
+            "Z" => Some(Outcome::Win),
+            _ => None,
+        }
+    }
+
+    fn get_player_move(&self, opponent: &Move) -> Move {
+        match (self, opponent) {
+            (Outcome::Draw, _) => opponent.clone(),
+            (Outcome::Win, Move::Rock) => Move::Paper,
+            (Outcome::Win, Move::Paper) => Move::Scissors,
+            (Outcome::Win, Move::Scissors) => Move::Rock,
+            (Outcome::Loss, Move::Rock) => Move::Scissors,
+            (Outcome::Loss, Move::Paper) => Move::Rock,
+            (Outcome::Loss, Move::Scissors) => Move::Paper,
+        }
+    }
 }
 
 fn main() {
+    // part 01
     let mut file = File::open("src/day02/input").unwrap();
     let mut contents = String::new();
     file.read_to_string(&mut contents).unwrap();
@@ -73,16 +95,36 @@ fn main() {
             let chars: Vec<&str> = string.split_whitespace().collect();
             let opponent = chars.get(0).and_then(|str| Move::for_opponent(*str));
             let player = chars.get(1).and_then(|str| Move::for_self(*str));
-            player.zip(opponent)
+            opponent.zip(player)
         })
         .flatten()
         .collect();
 
     let mut score = 0;
-    for (player, opponent) in games {
+    for (opponent, player) in games {
         score += player.value();
         score += Outcome::from_game(&player, &opponent).value();
     }
 
     println!("{}", score);
+
+    // part 02
+    let games: Vec<(Move, Outcome)> = contents
+        .split("\n")
+        .map(|string| {
+            let chars: Vec<&str> = string.split_whitespace().collect();
+            let opponent = chars.get(0).and_then(|str| Move::for_opponent(*str));
+            let outcome = chars.get(1).and_then(|str| Outcome::from_letter(*str));
+            opponent.zip(outcome)
+        })
+        .flatten()
+        .collect();
+
+    let mut score = 0;
+    for (opponent, outcome) in games {
+        score += outcome.get_player_move(&opponent).value();
+        score += outcome.value();
+    }
+
+    println!("{:?}", score);
 }
