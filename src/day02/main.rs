@@ -92,9 +92,9 @@ fn main() {
     let games: Vec<(Move, Move)> = contents
         .split("\n")
         .map(|string| {
-            let chars: Vec<&str> = string.split_whitespace().collect();
-            let opponent = chars.get(0).and_then(|str| Move::for_opponent(*str));
-            let player = chars.get(1).and_then(|str| Move::for_self(*str));
+            let chars = string.split_once(" ");
+            let opponent = chars.and_then(|(str, _)| Move::for_opponent(str));
+            let player = chars.and_then(|(_, str)| Move::for_self(str));
             opponent.zip(player)
         })
         .flatten()
@@ -112,9 +112,9 @@ fn main() {
     let games: Vec<(Move, Outcome)> = contents
         .split("\n")
         .map(|string| {
-            let chars: Vec<&str> = string.split_whitespace().collect();
-            let opponent = chars.get(0).and_then(|str| Move::for_opponent(*str));
-            let outcome = chars.get(1).and_then(|str| Outcome::from_letter(*str));
+            let chars = string.split_once(" ");
+            let opponent = chars.and_then(|(str, _)| Move::for_opponent(str));
+            let outcome = chars.and_then(|(_, str)| Outcome::from_letter(str));
             opponent.zip(outcome)
         })
         .flatten()
