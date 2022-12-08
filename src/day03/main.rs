@@ -21,6 +21,17 @@ impl Rucksack {
             matches.get(0).map(|e| e.clone())
         };
     }
+
+    fn find_badge(bags: &[&str]) -> Option<char> {
+        let mut result = None;
+        for char in bags[0].chars() {
+            if bags.iter().all(|bag| bag.contains(char)) {
+                result = Some(char);
+                break;
+            };
+        }
+        result
+    }
 }
 
 fn main() {
@@ -48,6 +59,18 @@ fn main() {
     println!("{:?}", matches);
 
     let sum: u32 = matches.iter().map(get_char_value).sum();
+
+    println!("{}", sum);
+
+    // part 2
+
+    let bags: Vec<&str> = contents.lines().collect();
+    let sum: u32 = bags
+        .chunks(3)
+        .map(Rucksack::find_badge)
+        .filter_map(|e| e)
+        .map(|e| get_char_value(&e))
+        .sum();
 
     println!("{}", sum);
 }
